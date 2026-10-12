@@ -1,0 +1,34 @@
+<UserControl x:Class="PerformanceMonitor.Controls.MetricCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:PerformanceMonitor.Controls">
+    <Border Style="{StaticResource Card}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" MinHeight="92" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <DockPanel LastChildFill="True">
+                <Border x:Name="GlyphBorder" Width="36" Height="36" CornerRadius="10" Background="#2622D3EE">
+                    <TextBlock x:Name="GlyphText" FontFamily="{StaticResource IconFont}" FontSize="16"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="TitleText" FontSize="14" FontWeight="SemiBold" />
+                    <TextBlock x:Name="SubtitleText" FontSize="11" Foreground="{StaticResource SubTextBrush}"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </DockPanel>
+
+            <TextBlock x:Name="ValueText" Grid.Row="1" Text="–" FontSize="30" FontWeight="SemiBold" Margin="0,14,0,0" />
+
+            <c:LiveChart x:Name="Chart" Grid.Row="2" Margin="0,6,0,8" />
+
+            <TextBlock x:Name="DetailText" Grid.Row="3" FontSize="12" Foreground="{StaticResource SubTextBrush}"
+                       TextTrimming="CharacterEllipsis" />
+        </Grid>
+    </Border>
+</UserControl>

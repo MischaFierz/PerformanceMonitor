@@ -1,0 +1,115 @@
+<UserControl x:Class="PerformanceMonitor.Views.ProcessesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="28,0,28,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <DockPanel Margin="0,0,0,14">
+            <TextBox x:Name="SearchBox" Style="{StaticResource SearchBox}" Tag="Prozess suchen …" Width="300" TextChanged="SearchBox_TextChanged" />
+            <CheckBox x:Name="GroupToggle" Style="{StaticResource ToggleSwitch}" Content="Nach Programm gruppieren" Margin="20,0,0,0" IsChecked="True" Click="GroupToggle_Click" />
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock x:Name="CountText" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,16,0" />
+                <Button x:Name="LocationButton" Click="OpenLocation_Click" Margin="0,0,8,0" ToolTip="Dateispeicherort öffnen">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE8B7;" Style="{StaticResource Icon}" Margin="0,0,8,0" />
+                        <TextBlock Text="Speicherort" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="KillButton" Style="{StaticResource DangerButton}" Click="Kill_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE711;" Style="{StaticResource Icon}" Margin="0,0,8,0" />
+                        <TextBlock Text="Beenden" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <Border Grid.Row="1" Style="{StaticResource Card}" Padding="4,6">
+            <DataGrid x:Name="Grid" MouseDoubleClick="Grid_MouseDoubleClick">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Beenden" Click="Kill_Click" />
+                        <MenuItem Header="Dateispeicherort öffnen" Click="OpenLocation_Click" />
+                        <MenuItem Header="Im Web suchen" Click="SearchWeb_Click" />
+                        <Separator />
+                        <MenuItem Header="Priorität festlegen">
+                            <MenuItem Header="Hoch" Tag="High" Click="Priority_Click" />
+                            <MenuItem Header="Höher als normal" Tag="AboveNormal" Click="Priority_Click" />
+                            <MenuItem Header="Normal" Tag="Normal" Click="Priority_Click" />
+                            <MenuItem Header="Niedriger als normal" Tag="BelowNormal" Click="Priority_Click" />
+                            <MenuItem Header="Niedrig" Tag="Idle" Click="Priority_Click" />
+                        </MenuItem>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Name" Width="2.2*" SortMemberPath="Name" CanUserSort="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Icon}" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality" />
+                                    <TextBlock Text="{Binding Name}" Margin="10,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    <Border Background="#252B3D" CornerRadius="8" Padding="7,1" Margin="8,0,0,0" VerticalAlignment="Center"
+                                            Visibility="{Binding IsGroup, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="{Binding Count}" FontSize="11" Foreground="{StaticResource SubTextBrush}" />
+                                    </Border>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn x:Name="PidColumn" Header="PID" Binding="{Binding PidText}" SortMemberPath="Pid" Width="80" />
+                    <DataGridTemplateColumn Header="CPU" SortMemberPath="Cpu" Width="90" SortDirection="Descending"
+                                            CellStyle="{StaticResource HeatCell}" HeaderStyle="{StaticResource RightHeader}">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding Cpu, Converter={StaticResource Heat}, ConverterParameter=50}" Padding="12,0">
+                                    <TextBlock Text="{Binding CpuText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Arbeitsspeicher" SortMemberPath="WorkingSet" Width="120"
+                                            CellStyle="{StaticResource HeatCell}" HeaderStyle="{StaticResource RightHeader}">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding WorkingSet, Converter={StaticResource Heat}, ConverterParameter=3221225472}" Padding="12,0">
+                                    <TextBlock Text="{Binding RamText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Datenträger" SortMemberPath="IoBps" Width="110"
+                                            CellStyle="{StaticResource HeatCell}" HeaderStyle="{StaticResource RightHeader}">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding IoBps, Converter={StaticResource Heat}, ConverterParameter=31457280}" Padding="12,0">
+                                    <TextBlock Text="{Binding IoText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="GPU" SortMemberPath="Gpu" Width="80"
+                                            CellStyle="{StaticResource HeatCell}" HeaderStyle="{StaticResource RightHeader}">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding Gpu, Converter={StaticResource Heat}, ConverterParameter=100}" Padding="12,0">
+                                    <TextBlock Text="{Binding GpuText}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Beschreibung" Binding="{Binding Description}" SortMemberPath="Description" Width="1.6*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                <Setter Property="Foreground" Value="{StaticResource SubTextBrush}" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>
