@@ -17,3 +17,9 @@ _ReSharper*/
 # OS
 Thumbs.db
 desktop.ini
+
+# Website: Daten und Installer entstehen erst auf dem Server
+WEBSITE/UPLOAD_TO_SERVER/data/*
+!WEBSITE/UPLOAD_TO_SERVER/data/.htaccess
+!WEBSITE/UPLOAD_TO_SERVER/data/index.php
+WEBSITE/UPLOAD_TO_SERVER/files/*.exe

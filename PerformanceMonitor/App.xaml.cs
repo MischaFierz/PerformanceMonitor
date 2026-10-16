@@ -25,6 +25,7 @@ public partial class App : Application
     private RegisteredWaitHandle? _showWait;
     private WinForms.NotifyIcon? _tray;
     private MainWindow? _window;
+    private string? _balloonPage;
 
     private DateTime? _cpuHighSince, _ramHighSince;
     private DateTime _lastCpuAlert = DateTime.MinValue, _lastRamAlert = DateTime.MinValue;
@@ -82,6 +83,35 @@ public partial class App : Application
         int snapArg = Array.IndexOf(e.Args, "--snapshot");
         if (snapArg >= 0 && snapArg + 1 < e.Args.Length) _window.StartSnapshots(e.Args[snapArg + 1]);
         if (!minimized) _window.Show();
+
+        _ = CheckForUpdatesAsync(minimized);
+    }
+
+    private async Task CheckForUpdatesAsync(bool minimized)
+    {
+        // Der Installer beendet PerfPulse ohnehin und startet es danach neu
+        if (await UpdateService.CheckAndInstallAsync(Settings.AutoUpdate, minimized))
+        {
+            ReleaseSingleInstance();
+            ExitApp();
+            return;
+        }
+
+        await RefreshNotificationsAsync();
+        // Läuft PerfPulse tagelang im Infobereich, neue Mitteilungen trotzdem zeitnah zeigen
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromHours(3) };
+        timer.Tick += async (_, _) => await RefreshNotificationsAsync();
+        timer.Start();
+    }
+
+    private async Task RefreshNotificationsAsync()
+    {
+        var fresh = await NotificationService.RefreshAsync();
+        if (fresh.Count > 0 && _window?.IsVisible != true)
+        {
+            var n = fresh[0];
+            ShowTrayMessage(n.Title, n.Message, n.Level is "warning" or "critical" ? WinForms.ToolTipIcon.Warning : WinForms.ToolTipIcon.Info, page: null);
+        }
     }
 
     private bool AcquireSingleInstance(bool waitForPrevious)
@@ -119,7 +149,7 @@ public partial class App : Application
         menu.Items.Add("Beenden", null, (_, _) => ExitApp());
         _tray.ContextMenuStrip = menu;
         _tray.MouseClick += (_, a) => { if (a.Button == WinForms.MouseButtons.Left) ShowMainWindow(); };
-        _tray.BalloonTipClicked += (_, _) => { ShowMainWindow(); Navigate("processes"); };
+        _tray.BalloonTipClicked += (_, _) => { ShowMainWindow(); if (_balloonPage != null) Navigate(_balloonPage); };
     }
 
     private static System.Drawing.Icon LoadTrayIcon()
@@ -135,8 +165,12 @@ public partial class App : Application
         return System.Drawing.SystemIcons.Application;
     }
 
-    public void ShowTrayMessage(string title, string text, WinForms.ToolTipIcon icon = WinForms.ToolTipIcon.Info) =>
+    /// <param name="page">Seite, die ein Klick auf die Benachrichtigung öffnet (null = aktuelle Seite).</param>
+    public void ShowTrayMessage(string title, string text, WinForms.ToolTipIcon icon = WinForms.ToolTipIcon.Info, string? page = "processes")
+    {
+        _balloonPage = page;
         _tray?.ShowBalloonTip(5000, title, text, icon);
+    }
 
     public void ShowMainWindow()
     {

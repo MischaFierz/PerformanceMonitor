@@ -94,6 +94,32 @@
                 <StackPanel Grid.Row="1" Margin="28,0,28,18">
                     <TextBlock x:Name="PageTitle" Style="{StaticResource H1}" />
                     <TextBlock x:Name="PageSubtitle" Style="{StaticResource Caption}" FontSize="13" Margin="0,3,0,0" />
+
+                    <!-- Mitteilungen aus dem Admin-Bereich der Website -->
+                    <ItemsControl x:Name="NotificationList" Margin="0,14,0,0" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1"
+                                        CornerRadius="10" Margin="0,0,0,8" ClipToBounds="True">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Left" Width="3" Background="{Binding Accent}" />
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource CaptionButton}" Content="&#xE711;" FontSize="10"
+                                                Width="40" Height="40" VerticalAlignment="Top" ToolTip="Schliessen"
+                                                Tag="{Binding Id}" Click="DismissNotification_Click" />
+                                        <Button DockPanel.Dock="Right" Content="{Binding LinkText}" Tag="{Binding Link}" Click="NotificationLink_Click"
+                                                VerticalAlignment="Center" Margin="12,0,0,0"
+                                                Visibility="{Binding HasLink, Converter={StaticResource BoolToVis}}" />
+                                        <TextBlock DockPanel.Dock="Left" Text="{Binding Glyph}" Style="{StaticResource Icon}" FontSize="16"
+                                                   Foreground="{Binding Accent}" Margin="14,0,12,0" />
+                                        <StackPanel Margin="0,10,0,10" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Message}" Style="{StaticResource Caption}" FontSize="12.5" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
 
                 <ContentControl x:Name="PageHost" Grid.Row="2" Focusable="False">

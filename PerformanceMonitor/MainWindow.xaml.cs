@@ -55,6 +55,7 @@ public partial class MainWindow : Window
         AdminDot.Fill = App.IsAdmin ? (System.Windows.Media.Brush)FindResource("GoodBrush") : (System.Windows.Media.Brush)FindResource("SubTextBrush");
 
         App.Monitor.SnapshotReady += s => Dispatcher.BeginInvoke(() => UpdateMini(s));
+        NotificationService.Changed += () => Dispatcher.BeginInvoke(UpdateNotifications);
         SourceInitialized += (_, _) => ApplyWindowEffects();
         StateChanged += (_, _) => UpdateWindowState();
         Closing += OnClosing;
@@ -129,6 +130,36 @@ public partial class MainWindow : Window
             PageShift.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, new DoubleAnimation(10, 0, TimeSpan.FromMilliseconds(260)) { EasingFunction = ease });
         }
         (page as IPage)?.OnNavigatedTo();
+    }
+
+
+    public sealed record NotificationItem(string Id, string Title, string Message, string? Link, string LinkText, bool HasLink, System.Windows.Media.Brush Accent, string Glyph);
+
+    private void UpdateNotifications()
+    {
+        NotificationList.ItemsSource = NotificationService.Visible.Select(n =>
+        {
+            var (brush, glyph) = n.Level switch
+            {
+                "success" => ("GoodBrush", ""),
+                "warning" => ("WarnBrush", ""),
+                "critical" => ("CritBrush", ""),
+                _ => ("InfoBrush", ""),
+            };
+            return new NotificationItem(n.Id, n.Title, n.Message, n.Link, string.IsNullOrWhiteSpace(n.LinkText) ? "Mehr erfahren" : n.LinkText!,
+                n.Link != null, (System.Windows.Media.Brush)FindResource(brush), glyph);
+        }).ToList();
+    }
+
+    private void DismissNotification_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: string id }) NotificationService.Dismiss(id);
+    }
+
+    private void NotificationLink_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: string url })
+            try { ProcessActions.OpenUrl(url); } catch { }
     }
 
     private void UpdateMini(Snapshot s)

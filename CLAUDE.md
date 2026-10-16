@@ -28,6 +28,19 @@ gh release create v<new-ver> dist\PerfPulse-Setup-<new-ver>.exe --title "PerfPul
 
 Settings and scan history live in `%AppData%\PerfPulse`.
 
+## Updates, website & admin panel
+
+- `WEBSITE/UPLOAD_TO_SERVER` is the PHP website (landing page, `/admin/` panel, `/api/`),
+  copied as-is to the web server; no database, data is stored in `data/*.php` (JSON behind a
+  PHP guard line). Setup notes: `WEBSITE/ANLEITUNG.md`.
+- On startup the app asks `<UpdateServer>/api/update.php` for the latest published version
+  (falls back to GitHub releases), verifies the SHA-256 and runs the installer silently
+  (`/Relaunch=` restarts it). Notifications come from `/api/notifications.php`.
+- The server address is the `UpdateServer` MSBuild property (`.csproj` or
+  `build.ps1 -UpdateServer`); `settings.json` → `UpdateServer` overrides it for testing.
+- Publishing: build, then upload the installer in the admin panel (or create a GitHub
+  release and use "Von GitHub übernehmen").
+
 ## Repository policy
 
 - **Never mention Claude, AI assistants, or any automated-generation tooling anywhere in

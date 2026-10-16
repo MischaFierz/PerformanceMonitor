@@ -8,6 +8,11 @@ public sealed class AppSettings
     public int UpdateIntervalMs { get; set; } = 1000;
     public bool MinimizeToTray { get; set; } = true;
     public bool StartMinimized { get; set; }
+    public bool AutoUpdate { get; set; } = true;
+    /// <summary>Überschreibt die beim Build gesetzte Website-Adresse (leer = Standard).</summary>
+    public string? UpdateServer { get; set; }
+    public List<string> SeenNotifications { get; set; } = [];
+    public List<string> DismissedNotifications { get; set; } = [];
     public bool AlertsEnabled { get; set; } = true;
     public int CpuAlertThreshold { get; set; } = 90;
     public int RamAlertThreshold { get; set; } = 90;

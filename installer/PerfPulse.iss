@@ -68,8 +68,23 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
+; Automatisches Update aus der App (/Relaunch=normal|minimized): danach neu starten
+Filename: "{app}\{#AppExe}"; Parameters: "{code:RelaunchParams}"; Flags: nowait runasoriginaluser; Check: ShouldRelaunch
 
 [Code]
+function ShouldRelaunch(): Boolean;
+begin
+  Result := WizardSilent and (ExpandConstant('{param:Relaunch|}') <> '');
+end;
+
+function RelaunchParams(Param: String): String;
+begin
+  if CompareText(ExpandConstant('{param:Relaunch|}'), 'minimized') = 0 then
+    Result := '--minimized'
+  else
+    Result := '';
+end;
+
 // PerfPulse läuft meist im Infobereich weiter – vor Installation/Deinstallation beenden
 procedure KillRunningApp();
 var

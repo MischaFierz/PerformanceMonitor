@@ -22,8 +22,29 @@ public partial class SettingsView : UserControl
         SelectByTag(DurationBox, s.AlertDurationSec);
         VersionText.Text = $"Version {App.Version}" + (App.IsAdmin ? " · Administrator-Modus" : "");
         AdminButton.IsEnabled = !App.IsAdmin;
+        AutoUpdateToggle.IsChecked = s.AutoUpdate;
         UpdateSliderTexts();
+        UpdateLatestVersionText();
+        Loaded += (_, _) => UpdateService.Changed += OnUpdateChanged;
+        Unloaded += (_, _) => UpdateService.Changed -= OnUpdateChanged;
         _loading = false;
+    }
+
+    private void OnUpdateChanged() => Dispatcher.BeginInvoke(UpdateLatestVersionText);
+
+    private void UpdateLatestVersionText()
+    {
+        var latest = UpdateService.LatestVersion;
+        LatestVersionText.Text = UpdateService.State switch
+        {
+            UpdateState.Checking => "Suche nach Updates …",
+            UpdateState.Downloading => $"Neueste Version: {latest} · wird heruntergeladen …",
+            UpdateState.Installing => $"Neueste Version: {latest} · wird installiert …",
+            _ when latest == null => "Neueste Version: unbekannt",
+            _ when Version.Parse(latest) <= Version.Parse(App.Version) => $"Neueste Version: {App.Version} · aktuell",
+            UpdateState.Paused => $"Neueste Version: {latest} · Updates vorübergehend pausiert",
+            _ => $"Neueste Version: {latest}",
+        };
     }
 
     private static void SelectByTag(ComboBox box, int value)
@@ -46,6 +67,7 @@ public partial class SettingsView : UserControl
         var s = App.Settings;
         s.MinimizeToTray = TrayToggle.IsChecked == true;
         s.StartMinimized = MinimizedToggle.IsChecked == true;
+        s.AutoUpdate = AutoUpdateToggle.IsChecked == true;
         s.AlertsEnabled = AlertsToggle.IsChecked == true;
         s.CpuAlertThreshold = (int)CpuSlider.Value;
         s.RamAlertThreshold = (int)RamSlider.Value;

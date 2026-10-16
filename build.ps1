@@ -3,6 +3,8 @@
 # Ergebnis: dist\PerfPulse-Setup-<Version>.exe
 param(
     [string]$Version = "1.0.0",
+    # Adresse der PerfPulse-Website (z. B. https://perfpulse.example), leer = Wert aus der .csproj
+    [string]$UpdateServer = "",
     [switch]$SkipAssets
 )
 $ErrorActionPreference = 'Stop'
@@ -19,6 +21,7 @@ if (Test-Path "$root\publish") { Remove-Item "$root\publish" -Recurse -Force }
 dotnet publish "$root\PerformanceMonitor\PerformanceMonitor.csproj" `
     -c Release -r win-x64 --self-contained true `
     -p:PublishReadyToRun=true -p:DebugType=none -p:Version=$Version `
+    $(if ($UpdateServer) { "-p:UpdateServer=$UpdateServer" }) `
     -o "$root\publish"
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish fehlgeschlagen" }
 
